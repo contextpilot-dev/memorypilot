@@ -1,7 +1,7 @@
 .PHONY: build install clean test run
 
 VERSION := 0.1.0
-LDFLAGS := -ldflags "-s -w -X github.com/memorypilot/memorypilot/cmd.version=$(VERSION)"
+LDFLAGS := -ldflags "-s -w -X github.com/contextpilot-dev/memorypilot/cmd.version=$(VERSION)"
 
 build:
 	go build $(LDFLAGS) -o memorypilot .
