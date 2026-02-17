@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/memorypilot/memorypilot/internal/agent"
+	"github.com/contextpilot-dev/memorypilot/internal/agent"
 	"github.com/spf13/cobra"
 )
 

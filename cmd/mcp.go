@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/memorypilot/memorypilot/internal/mcp"
+	"github.com/contextpilot-dev/memorypilot/internal/mcp"
 	"github.com/spf13/cobra"
 )
 

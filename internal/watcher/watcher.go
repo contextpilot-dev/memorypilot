@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 )
 
 // Watcher is the interface for all event watchers

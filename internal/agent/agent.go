@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/memorypilot/memorypilot/internal/embedding"
-	"github.com/memorypilot/memorypilot/internal/extractor"
-	"github.com/memorypilot/memorypilot/internal/store"
-	"github.com/memorypilot/memorypilot/internal/watcher"
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/internal/embedding"
+	"github.com/contextpilot-dev/memorypilot/internal/extractor"
+	"github.com/contextpilot-dev/memorypilot/internal/store"
+	"github.com/contextpilot-dev/memorypilot/internal/watcher"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 	"github.com/oklog/ulid/v2"
 )
 

@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/memorypilot/memorypilot/internal/store"
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/internal/store"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 )
 
 // Server implements the MCP protocol over stdio

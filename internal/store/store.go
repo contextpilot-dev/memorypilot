@@ -9,7 +9,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 )
 
 // Store handles all database operations

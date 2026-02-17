@@ -34,7 +34,7 @@ MemoryPilot runs in the background, watching your development activity and build
 
 ```bash
 # macOS/Linux
-curl -fsSL https://memorypilot.dev/install.sh | sh
+curl -fsSL https://contextpilot.dev/memorypilot/install.sh | sh
 
 # Go install
 go install github.com/memorypilot/memorypilot@latest

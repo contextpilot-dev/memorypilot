@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/memorypilot/memorypilot/cmd"
+	"github.com/contextpilot-dev/memorypilot/cmd"
 )
 
 func main() {

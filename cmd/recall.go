@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/memorypilot/memorypilot/internal/embedding"
-	"github.com/memorypilot/memorypilot/internal/store"
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/internal/embedding"
+	"github.com/contextpilot-dev/memorypilot/internal/store"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 	"github.com/spf13/cobra"
 )
 

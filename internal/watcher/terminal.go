@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/memorypilot/memorypilot/pkg/models"
+	"github.com/contextpilot-dev/memorypilot/pkg/models"
 	"github.com/oklog/ulid/v2"
 )
 

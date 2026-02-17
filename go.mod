@@ -1,4 +1,4 @@
-module github.com/memorypilot/memorypilot
+module github.com/contextpilot-dev/memorypilot
 
 go 1.25.6
 

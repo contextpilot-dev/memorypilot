@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/memorypilot/memorypilot/internal/store"
+	"github.com/contextpilot-dev/memorypilot/internal/store"
 	"github.com/spf13/cobra"
 )
 
