@@ -7,9 +7,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
+	"github.com/contextpilot-dev/memorypilot/internal/embedding"
 	"github.com/contextpilot-dev/memorypilot/internal/store"
 	"github.com/contextpilot-dev/memorypilot/pkg/models"
+	"github.com/oklog/ulid/v2"
 )
 
 // Server implements the MCP protocol over stdio
@@ -159,6 +162,11 @@ func (s *Server) handleToolsList(req *JSONRPCRequest) {
 						"enum":        []string{"decision", "pattern", "fact", "preference", "mistake", "learning"},
 						"default":     "fact",
 					},
+					"topics": map[string]interface{}{
+						"type":        "array",
+						"description": "Topics/tags for this memory",
+						"items":       map[string]interface{}{"type": "string"},
+					},
 				},
 				"required": []string{"content"},
 			},
@@ -201,8 +209,9 @@ func (s *Server) handleToolsCall(req *JSONRPCRequest) {
 
 func (s *Server) handleRecall(req *JSONRPCRequest, args json.RawMessage) {
 	var params struct {
-		Query string `json:"query"`
-		Limit int    `json:"limit"`
+		Query    string `json:"query"`
+		Limit    int    `json:"limit"`
+		Semantic bool   `json:"semantic"`
 	}
 	json.Unmarshal(args, &params)
 
@@ -210,10 +219,21 @@ func (s *Server) handleRecall(req *JSONRPCRequest, args json.RawMessage) {
 		params.Limit = 5
 	}
 
-	memories, err := s.store.Recall(models.RecallRequest{
-		Query: params.Query,
-		Limit: params.Limit,
-	})
+	var memories []models.Memory
+	var err error
+
+	// Try semantic search first (hybrid: semantic + keyword)
+	embedder := embedding.NewOllamaEmbedder("", "nomic-embed-text")
+	if queryEmb, embErr := embedder.Embed(params.Query); embErr == nil && queryEmb != nil {
+		memories, err = s.store.HybridSearch(params.Query, queryEmb, params.Limit)
+	} else {
+		// Fall back to keyword search
+		memories, err = s.store.Recall(models.RecallRequest{
+			Query: params.Query,
+			Limit: params.Limit,
+		})
+	}
+
 	if err != nil {
 		s.sendError(req.ID, -32000, err.Error())
 		return
@@ -226,8 +246,12 @@ func (s *Server) handleRecall(req *JSONRPCRequest, args json.RawMessage) {
 	} else {
 		text = fmt.Sprintf("Found %d memories:\n\n", len(memories))
 		for i, m := range memories {
-			text += fmt.Sprintf("%d. [%s] %s\n   %s\n   Topics: %v\n\n",
-				i+1, m.Type, m.Summary, m.Content, m.Topics)
+			topicsStr := ""
+			if len(m.Topics) > 0 {
+				topicsStr = fmt.Sprintf("\n   Topics: %v", m.Topics)
+			}
+			text += fmt.Sprintf("%d. [%s] %s\n   %s%s\n\n",
+				i+1, m.Type, m.Summary, m.Content, topicsStr)
 		}
 	}
 
@@ -240,8 +264,9 @@ func (s *Server) handleRecall(req *JSONRPCRequest, args json.RawMessage) {
 
 func (s *Server) handleRemember(req *JSONRPCRequest, args json.RawMessage) {
 	var params struct {
-		Content string `json:"content"`
-		Type    string `json:"type"`
+		Content string   `json:"content"`
+		Type    string   `json:"type"`
+		Topics  []string `json:"topics"`
 	}
 	json.Unmarshal(args, &params)
 
@@ -249,14 +274,53 @@ func (s *Server) handleRemember(req *JSONRPCRequest, args json.RawMessage) {
 		params.Type = "fact"
 	}
 
-	// TODO: Create memory
-	text := fmt.Sprintf("Remembered: %s (type: %s)", params.Content, params.Type)
+	// Create memory
+	now := time.Now()
+	memory := models.Memory{
+		ID:      ulid.Make().String(),
+		Type:    models.MemoryType(params.Type),
+		Content: params.Content,
+		Summary: truncateStr(params.Content, 100),
+		Scope:   models.MemoryScopePersonal,
+		Source: models.Source{
+			Type:      models.SourceTypeManual,
+			Reference: "mcp",
+			Timestamp: now,
+		},
+		Confidence:     1.0,
+		Importance:     1.0,
+		Topics:         params.Topics,
+		CreatedAt:      now,
+		LastAccessedAt: now,
+		AccessCount:    0,
+	}
+
+	// Save memory
+	if err := s.store.CreateMemory(&memory); err != nil {
+		s.sendError(req.ID, -32000, fmt.Sprintf("Failed to save memory: %v", err))
+		return
+	}
+
+	// Generate embedding (best effort)
+	embedder := embedding.NewOllamaEmbedder("", "nomic-embed-text")
+	if emb, err := embedder.Embed(memory.Content); err == nil && emb != nil {
+		s.store.UpdateMemoryEmbedding(memory.ID, emb)
+	}
+
+	text := fmt.Sprintf("✅ Remembered: %s\n   Type: %s\n   ID: %s", params.Content, params.Type, memory.ID)
 
 	s.sendResult(req.ID, map[string]interface{}{
 		"content": []map[string]interface{}{
 			{"type": "text", "text": text},
 		},
 	})
+}
+
+func truncateStr(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen-3] + "..."
 }
 
 func (s *Server) handleStatus(req *JSONRPCRequest) {

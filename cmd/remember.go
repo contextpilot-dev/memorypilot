@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/contextpilot-dev/memorypilot/internal/embedding"
 	"github.com/contextpilot-dev/memorypilot/internal/store"
 	"github.com/contextpilot-dev/memorypilot/pkg/models"
 	"github.com/oklog/ulid/v2"
@@ -70,6 +71,14 @@ Examples:
 		// Save
 		if err := s.CreateMemory(&memory); err != nil {
 			return fmt.Errorf("failed to save memory: %w", err)
+		}
+		
+		// Generate embedding for semantic search (best effort)
+		embedder := embedding.NewOllamaEmbedder("", "nomic-embed-text")
+		if emb, err := embedder.Embed(memory.Content); err == nil && emb != nil {
+			if err := s.UpdateMemoryEmbedding(memory.ID, emb); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: Failed to generate embedding: %v\n", err)
+			}
 		}
 		
 		fmt.Printf("✅ Memory created: %s\n", memory.ID)
