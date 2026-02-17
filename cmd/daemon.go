@@ -76,9 +76,7 @@ var daemonStartCmd = &cobra.Command{
 			bgCmd.Stdout = nil
 			bgCmd.Stderr = nil
 			bgCmd.Stdin = nil
-			bgCmd.SysProcAttr = &syscall.SysProcAttr{
-				Setsid: true, // Create new session (detach from terminal)
-			}
+			bgCmd.SysProcAttr = getSysProcAttr()
 			
 			if err := bgCmd.Start(); err != nil {
 				return fmt.Errorf("failed to start background process: %w", err)
